@@ -56,9 +56,8 @@ if __name__ == "__main__":
         generate_corner(0, 8, 8, 16)
         generate_corner(8, 8, 16, 16)
         generate_corner(8, 0, 16, 8)
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('Customizable 2D Grid')
+
+    plt.title('Ricochet Robots')
     plt.grid(True)
 
     # draw the full grid in increment of 1
