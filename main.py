@@ -26,7 +26,7 @@ def generate_color():
     return random.choice(['red', 'green', 'blue', 'yellow'])
 
 if __name__ == "__main__":
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(1, 1, 1)
 
     # draw the boarder
@@ -61,6 +61,6 @@ if __name__ == "__main__":
     ax.grid(which='minor', alpha=0.4)
 
     for _ in range(17):
-        plt.scatter(*generate_target(), color=generate_color(), label='Point')
+        plt.scatter(*generate_target(), color=generate_color(), label='Point', s=100)
 
     plt.show()
