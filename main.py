@@ -4,6 +4,9 @@ import random
 
 LINEWIDTH = 3
 COLOR = 'black'
+BOARD_LEN = 16
+BORDER_COORDS = []
+wall_coords = set()
 
 # randomly generates a point and chooses one of 4 orientations to extend 2 walls
 def generate_corner(x1, y1, x2, y2):
@@ -11,19 +14,36 @@ def generate_corner(x1, y1, x2, y2):
     y = random.randint(y1+1, y2-1)
     n = random.random()
     if n <= 0.25:
-        plt.plot([x, x+1], [y, y], linewidth=LINEWIDTH, color=COLOR)
-        plt.plot([x, x], [y, y-1], linewidth=LINEWIDTH, color=COLOR)
+        if is_wall(x, y) or is_wall(x+1, y) or is_wall(x, y-1):
+            return generate_corner(x1, y1, x2, y2)
+        else:
+            plt.plot([x, x+1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+            plt.plot([x, x], [y, y-1], linewidth=LINEWIDTH, color=COLOR)
+            wall_coords.update([(x, y), (x+1, y), (x, y-1)])
     elif n <= 0.5:
-        plt.plot([x, x], [y, y+1], linewidth=LINEWIDTH, color=COLOR)
-        plt.plot([x, x+1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+        if is_wall(x, y) or is_wall(x+1, y) or is_wall(x, y+1):
+            return generate_corner(x1, y1, x2, y2)
+        else:
+            plt.plot([x, x], [y, y+1], linewidth=LINEWIDTH, color=COLOR)
+            plt.plot([x, x+1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+            wall_coords.update([(x, y), (x+1, y), (x, y+1)])
     elif n <= 0.75:
-        plt.plot([x, x-1], [y, y], linewidth=LINEWIDTH, color=COLOR)
-        plt.plot([x, x], [y, y+1], linewidth=LINEWIDTH, color=COLOR)
+        if is_wall(x, y) or is_wall(x-1, y) or is_wall(x, y+1):
+            return generate_corner(x1, y1, x2, y2)
+        else:
+            plt.plot([x, x-1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+            plt.plot([x, x], [y, y+1], linewidth=LINEWIDTH, color=COLOR)
+            wall_coords.update([(x, y), (x-1, y), (x, y+1)])
     else:
-        plt.plot([x, x], [y, y-1], linewidth=LINEWIDTH, color=COLOR)
-        plt.plot([x, x-1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+        if is_wall(x, y) or is_wall(x-1, y) or is_wall(x, y-1):
+            return generate_corner(x1, y1, x2, y2)
+        else:
+            plt.plot([x, x], [y, y-1], linewidth=LINEWIDTH, color=COLOR)
+            plt.plot([x, x-1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+            wall_coords.update([(x, y), (x-1, y), (x, y-1)])
 
-
+def is_wall(x, y):
+    return (x, y) in wall_coords
 
 def generate_target():
     x = random.randint(0, 15)
@@ -33,9 +53,36 @@ def generate_target():
 def generate_color():
     return random.choice(['red', 'green', 'blue', 'yellow'])
 
+def generate_border_coords():
+    bottom = [(x, 0) for x in range(1, BOARD_LEN)]
+    top = [(x, BOARD_LEN) for x in range(1, BOARD_LEN)]
+    left = [(0, y) for y in range(1, BOARD_LEN)]
+    right = [(BOARD_LEN, y) for y in range(1, BOARD_LEN)]
+    return bottom + top + left + right
+
+def generate_border_wall():
+    x, y = random.choice(BORDER_COORDS)
+    if x == 0:
+        plt.plot([x, x+1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+        return [(x, y), (x+1, y)]
+    elif x == BOARD_LEN:
+        plt.plot([x, x-1], [y, y], linewidth=LINEWIDTH, color=COLOR)
+        return [(x, y), (x-1, y)]
+    elif y == 0:
+        plt.plot([x, x], [y, y+1], linewidth=LINEWIDTH, color=COLOR)
+        return [(x, y), (x, y+1)]
+    elif y == BOARD_LEN:
+        plt.plot([x, x], [y, y-1], linewidth=LINEWIDTH, color=COLOR)
+        return [(x, y), (x, y-1)]
+    else:
+        print("oops. fucked up on generating border wall")
+
 if __name__ == "__main__":
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(1, 1, 1)
+
+    BORDER_COORDS = generate_border_coords()
+    wall_coords.update(BORDER_COORDS)
 
     # draw the boarder
     plt.plot([0, 0], [16, 0], linewidth=LINEWIDTH, color=COLOR)
@@ -48,9 +95,16 @@ if __name__ == "__main__":
     plt.plot([7, 9], [9, 9], linewidth=LINEWIDTH, color=COLOR)
     plt.plot([9, 9], [9, 7], linewidth=LINEWIDTH, color=COLOR)
     plt.plot([9, 7], [7, 7], linewidth=LINEWIDTH, color=COLOR)
+    for i in range(7, 10):
+        for j in range(7, 10):
+            wall_coords.add((i, j))
+
+    # generate border walls
+    for _ in range(5):
+        wall_coords.update(generate_border_wall())
 
     # generate corners in each quadrant
-    corner_count = 7
+    corner_count = 6
     for _ in range(corner_count):
         generate_corner(0, 0, 8, 8)
         generate_corner(0, 8, 8, 16)
@@ -66,6 +120,8 @@ if __name__ == "__main__":
     ax.set_yticks(minor_ticks, minor=True)
     ax.grid(which='minor', alpha=0.4)
 
+
+    # generate targets
     for _ in range(17):
         plt.scatter(*generate_target(), color=generate_color(), label='Point', s=100)
 
